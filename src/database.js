@@ -2,6 +2,8 @@ import mysql from 'mysql';
 import Promise from 'promise';
 import { MongoClient } from 'mongodb';
 
+import { log } from './logger';
+
 export const mysqlConnection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
@@ -12,17 +14,16 @@ export const mysqlConnection = mysql.createConnection({
 mysqlConnection.connect();
 
 
-let mongoClient;
+export let mongoClient;
 const url = 'mongodb://localhost:27017';
 MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
   mongoClient = client;
   return client;
 });
-export const mongoclient = mongoClient;
 
-export const insertOne = (connection, row) => new Promise((resolve, reject) => {
+export const insertOne = (connection, row) => new Promise((resolve) => {
   connection.query('INSERT INTO clients SET  ?', row, (error, results) => {
-    if (error) { reject(error); }
+    if (error) { log(error); }
     resolve(results);
   });
 });

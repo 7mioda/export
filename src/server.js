@@ -4,7 +4,7 @@ import fs from 'fs';
 import parse from 'csv-parser';
 import chalk from 'chalk';
 import dotenv from 'dotenv';
-import { mongoclient as client, mysqlConnection as connection } from './database';
+import { mongoClient as client, mysqlConnection as connection } from './database';
 import { importData } from './util';
 
 require('babel-polyfill');
@@ -12,7 +12,7 @@ require('babel-polyfill');
 
 const server = http.createServer(async (request, response) => {
   const dbName = 'export';
-  const db = await client.db(dbName);
+  const db = client.db(dbName);
   const session = client.startSession({ readPreference: { mode: 'primary' } });
   session.startTransaction();
   const clients = db.collection('clients');
