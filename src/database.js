@@ -21,8 +21,8 @@ MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
   return client;
 });
 
-export const insertOne = (connection, row) => new Promise((resolve) => {
-  connection.query('INSERT INTO clients SET  ?', row, (error, results) => {
+export const insertOne = (connection, table, row) => new Promise((resolve) => {
+  connection.query(`INSERT INTO ${table} SET  ?`, row, (error, results) => {
     if (error) { log(error); }
     resolve(results);
   });

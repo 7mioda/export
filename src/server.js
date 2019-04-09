@@ -1,4 +1,5 @@
 import http from 'http';
+import url from 'url';
 import _ from 'lodash';
 import fs from 'fs';
 import parse from 'csv-parser';
@@ -11,15 +12,17 @@ require('babel-polyfill');
 
 
 const server = http.createServer(async (request, response) => {
+  const queryString = url.parse(request.url, true).query;
+  const entityName = queryString.entity_name;
   const dbName = 'export';
   const db = client.db(dbName);
   const session = client.startSession({ readPreference: { mode: 'primary' } });
   session.startTransaction();
-  const clients = db.collection('clients');
+  const doc = db.collection(entityName);
   try {
-    fs.statSync('./random_data.csv');
+    fs.statSync(`./${entityName}.csv`);
     const parser = parse({ delimiter: ',' });
-    const reader = fs.createReadStream('./random_data.csv');
+    const reader = fs.createReadStream(`./${entityName}.csv`);
     reader.setEncoding('utf-8');
     reader.on('open', () => {
       console.time(chalk.hex('#fff').bgBlue(('Exporting Data')));
@@ -27,9 +30,12 @@ const server = http.createServer(async (request, response) => {
 
     reader.pipe(parser);
     parser.on('readable', () => {
-      let record;
-      while (record = parser.read()) {
-        clients.updateOne({ _id: record.id }, { $set: _.mapKeys(record, (value, key) => ((key === 'id') ? '_id' : key)) }, { upsert: true });
+      let record = parser.read();
+      while (record) {
+        (record.id)
+          ? doc.updateOne({ _id: record.id }, { $set: _.mapKeys(record, (value, key) => ((key === 'id') ? '_id' : key)) }, { upsert: true })
+          : doc.insertOne(record);
+        record = parser.read();
       }
     });
     parser.on('error', (err) => {
@@ -42,7 +48,7 @@ const server = http.createServer(async (request, response) => {
       session.commitTransaction();
       session.endSession();
       console.timeEnd(chalk.hex('#fff').bgBlue('Exporting Data'));
-      importData(connection, clients);
+      importData(connection, entityName, doc);
     });
     response.setHeader('OK', 200);
     response.end('Processing Data');
