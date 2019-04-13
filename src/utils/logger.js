@@ -1,4 +1,5 @@
 import fs from 'fs';
+import chalk from 'chalk';
 
 
 let logger;
@@ -7,7 +8,7 @@ fs.stat('./logger.txt', (error, stats) => {
     fs.appendFileSync('./logger.txt', '');
   }
   logger = fs.createWriteStream('./logger.txt', { encoding: 'utf-8', flags: 'r+' });
-  logger.on('open', () => console.log('Logger s ready'));
+  logger.on('open', () => console.log(chalk.whiteBright.bgBlueBright('   Logger s ready  :D   ')));
   return stats;
 });
 
