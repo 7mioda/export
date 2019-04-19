@@ -37,10 +37,8 @@ export const unique = (mySqlService) => {
     encoding: 'utf-8',
     async transform(chunk, encoding, callback) {
       const test = await mySqlService.exists(chunk._id);
-      console.log(test);
       if ((test) && (_.indexOf(rows, chunk._id, 0) === -1)) {
         const data = JSON.stringify(chunk);
-        console.log(data);
         rows.push(chunk._id);
         callback(null, data);
       } else {
