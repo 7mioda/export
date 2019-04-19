@@ -2,7 +2,7 @@ import mysql from 'mysql';
 import { MongoClient } from 'mongodb';
 import chalk from 'chalk';
 
-import { log } from './utils/logger';
+import { log } from './services/logger';
 
 //------------------------------------------------------------
 //         MySql Connection

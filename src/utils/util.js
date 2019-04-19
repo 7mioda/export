@@ -1,7 +1,7 @@
 import { Transform, Writable } from 'stream';
 import chalk from 'chalk';
 import _ from 'lodash';
-import { exists, insertMany, insertManyTransaction } from './mySqlUtils';
+import { exists, insertMany } from './mySqlUtils';
 
 
 //------------------------------------------------------------
@@ -40,17 +40,6 @@ export const unique = (connection, entityName, rows = []) => new Transform({
 });
 
 
-export const normaliser = () => new Transform({
-  writableObjectMode: true,
-  objectMode: true,
-  autoDestroy: true,
-  encoding: 'utf-8',
-  transform(chunk, encoding, callback) {
-    // Push the data onto the readable queue.
-    const data = JSON.stringify(reformatData(chunk, value => _.replace(value, '�', 'xx')));
-    callback(null, data);
-  },
-});
 
 
 export const mongoPipe = doc => new Writable({
