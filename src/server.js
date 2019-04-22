@@ -6,13 +6,13 @@ import { init } from './loaders';
 async function startServer() {
   const app = express();
   await init({ expressApp: app });
-  const { PORT } = config;
-  app.listen(PORT || 7000, (err) => {
+  const { port } = config;
+  app.listen(port || 7000, (err) => {
     if (err) {
       console.log(err);
       return;
     }
-    console.log(chalk.whiteBright.bgBlue('      Go Go Server  !      '));
+    console.log(chalk.whiteBright.bgBlue(`      Go Go Server on ${port} !      `));
   });
 }
 

@@ -1,7 +1,6 @@
 import Promise from 'promise';
 import _ from 'lodash';
 
-
 export default class MySqlService {
   constructor(connection, table) {
     this.connection = connection;
@@ -9,6 +8,11 @@ export default class MySqlService {
     this.query = null;
   }
 
+  /**
+   *
+   * @param row {Array}
+   * @returns {Promise}
+   */
   insertOne(row) {
     return new Promise((resolve) => {
       this.connection.query(`INSERT INTO ${this.table} SET  ?`, MySqlService.queryParams(row), (error, results) => {
@@ -20,6 +24,11 @@ export default class MySqlService {
     });
   }
 
+  /**
+   *
+   * @param rows {Array}
+   * @returns {Promise}
+   */
   insertMany(rows) {
     return new Promise((resolve) => {
       const params = rows.map(row => MySqlService.queryParams(row));
@@ -32,6 +41,11 @@ export default class MySqlService {
     });
   }
 
+  /**
+   *
+   * @param id {String}
+   * @returns {Promise}
+   */
   exists(id) {
     return new Promise((resolve) => {
       this.connection.query(`SELECT * FROM ${this.table} WHERE id = "${id}"`, (error, results) => {
@@ -43,6 +57,11 @@ export default class MySqlService {
     });
   }
 
+  /**
+   *
+   * @param row {Array}
+   * @returns {string|*}
+   */
   static getQuery(row) {
     if (!this.query) {
       this.query = this.queryBuilder(row);
@@ -50,10 +69,20 @@ export default class MySqlService {
     return this.query;
   }
 
+  /**
+   *
+   * @param row {Array}
+   * @returns {Array}
+   */
   static queryParams(row) {
     return _.values(row);
   }
 
+  /**
+   *
+   * @param row {Array}
+   * @returns {string}
+   */
   static queryBuilder(row) {
     return `(${_.keys(row).join(' , ')}) VALUES ? `;
   }

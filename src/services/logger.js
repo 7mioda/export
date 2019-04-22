@@ -1,5 +1,11 @@
 import fs from 'fs';
 
+/**
+ *
+ * @param path {String}
+ * @returns {Promise}
+ */
+
 export const initLogger = path => new Promise((resolve, reject) => {
   const LOGGER_PATH = path || './logger.txt';
   fs.stat(LOGGER_PATH, (err) => {
