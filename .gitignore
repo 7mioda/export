@@ -1,5 +1,7 @@
 .idea
+yarn.lock
 /node_modules
 logger.txt
 dist
-./products.csv
+data/products.csv
+
