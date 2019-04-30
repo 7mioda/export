@@ -1,22 +1,22 @@
 import fs from 'fs';
 import { Readable, Writable } from 'stream';
+import chalk from 'chalk';
 import parse from 'csv-parser';
 import _ from 'lodash';
-
 
 /**
  *
  * @param path String
  * @returns csv file stream {ReadStream}
  */
-const getReader = (path) => {
+export const getReader = (path) => {
   try {
     fs.statSync(path);
     const reader = fs.createReadStream(path);
     reader.setEncoding('utf-8');
     return reader;
   } catch (error) {
-    throw (error);
+    throw error;
   }
 };
 
@@ -36,13 +36,23 @@ export const mongoPipe = (connection, dbName, docName) => {
     autoDestroy: true,
     write(chunk, encoding, callback) {
       const row = chunk;
-      (row.id)
-        ? doc.updateOne({ _id: row.id }, { $set: _.mapKeys(row, (value, key) => ((key === 'id') ? '_id' : key)) }, { upsert: true })
-        : doc.insertOne(row);
+      if (row.id) {
+        doc.updateOne(
+          { _id: row.id },
+          {
+            $set: _.mapKeys(row, (value, key) => (key === 'id' ? '_id' : key)),
+          },
+          { upsert: true }
+        );
+      } else {
+        doc.insertOne(row);
+      }
       callback(null, chunk);
     },
   });
-  const session = connection.startSession({ readPreference: { mode: 'primary' } });
+  const session = connection.startSession({
+    readPreference: { mode: 'primary' },
+  });
   writable.on('open', () => {
     session.startTransaction();
   });
@@ -53,7 +63,6 @@ export const mongoPipe = (connection, dbName, docName) => {
   });
   return writable;
 };
-
 
 /**
  *

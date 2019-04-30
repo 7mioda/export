@@ -1,0 +1,23 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 2018
+    },
+    "extends": [
+        "airbnb-base",
+        "eslint-config-prettier"
+    ],
+    "env": {
+        "node": true,
+        "jest": true,
+        "es6": true
+    },
+    "rules": {
+        "linebreak-style": 0,
+        "no-console": "off",
+        "no-await-in-loop": 0,
+        "no-cond-assign": 0,
+        "import/prefer-default-export": 0,
+        "no-underscore-dangle": "off",
+        "no-param-reassign": 0
+    }
+}
