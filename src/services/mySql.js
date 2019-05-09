@@ -77,12 +77,12 @@ export default class MySqlService {
     if (!this.query) {
       this.query = this.queryBuilder(row);
     }
-    return this.query;
+    return this.queryBuilder(row);
   }
 
   /**
    *
-   * @param row {Array}
+   * @param row {Object}
    * @returns {Array}
    */
   static queryParams(row) {
@@ -91,10 +91,10 @@ export default class MySqlService {
 
   /**
    *
-   * @param ro {Array}
+   * @param row {Object}
    * @returns {string}
    */
-  static queryBuilder(ro) {
-    return `(${_.keys(ro).join(' , ')}) VALUES ? `;
+  static queryBuilder(row) {
+    return `(${_.keys(row).join(' , ')}) VALUES ? `;
   }
 }

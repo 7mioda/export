@@ -1,8 +1,10 @@
 import fs from 'fs';
-import { Readable, Writable } from 'stream';
-import chalk from 'chalk';
+import { Readable, Writable, pipeline  as pipelineWithCb } from 'stream';
+import { promisify } from 'util';
 import parse from 'csv-parser';
-import _ from 'lodash';
+import { MongoPipe } from './pipes';
+
+const pipeline = promisify(pipelineWithCb);
 
 /**
  *
@@ -20,49 +22,6 @@ export const getReader = (path) => {
   }
 };
 
-/**
- *
- * @param connection {MongoClient}
- * @param dbName {String}
- * @param docName {String}
- * @returns {module:stream.internal.Writable}
- */
-
-export const mongoPipe = (connection, dbName, docName) => {
-  const db = connection.db(dbName);
-  const doc = db.collection(docName);
-  const writable = new Writable({
-    objectMode: true,
-    autoDestroy: true,
-    write(chunk, encoding, callback) {
-      const row = chunk;
-      if (row.id) {
-        doc.updateOne(
-          { _id: row.id },
-          {
-            $set: _.mapKeys(row, (value, key) => (key === 'id' ? '_id' : key)),
-          },
-          { upsert: true }
-        );
-      } else {
-        doc.insertOne(row);
-      }
-      callback(null, chunk);
-    },
-  });
-  const session = connection.startSession({
-    readPreference: { mode: 'primary' },
-  });
-  writable.on('open', () => {
-    session.startTransaction();
-  });
-  writable.on('end', () => {
-    session.commitTransaction();
-    session.endSession();
-    console.timeEnd(chalk.hex('#fff').bgBlue('Importing Data'));
-  });
-  return writable;
-};
 
 /**
  *
@@ -77,10 +36,9 @@ export const importData = (source, destination) => {
   let destinationStream;
   if (!(destination instanceof Writable)) {
     const { connection, dbName, docName } = destination;
-    destinationStream = mongoPipe(connection, dbName, docName);
+    destinationStream = new MongoPipe(connection, dbName, docName);
   } else {
     destinationStream = destination;
   }
-  sourceStream.pipe(parser).pipe(destinationStream);
-  return destinationStream;
+  return pipeline(sourceStream, parser, destinationStream);
 };
