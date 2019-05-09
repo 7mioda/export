@@ -6,6 +6,21 @@ import { MongoPipe } from './pipes';
 
 const pipeline = promisify(pipelineWithCb);
 
+class PipelineBuilder {
+  constructor () {
+    this.pipes = []
+  }
+
+  add (pipe) {
+    this.pipes.push(pipe);
+    return this;
+  }
+
+  build () {
+    return pipeline(...this.pipes);
+  }
+}
+
 /**
  *
  * @param path String
@@ -21,7 +36,6 @@ export const getReader = (path) => {
     throw error;
   }
 };
-
 
 /**
  *
@@ -40,5 +54,5 @@ export const importData = (source, destination) => {
   } else {
     destinationStream = destination;
   }
-  return pipeline(sourceStream, parser, destinationStream);
+  return new PipelineBuilder().add(sourceStream).add(parser).add(destinationStream).build();
 };
