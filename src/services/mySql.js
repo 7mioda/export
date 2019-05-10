@@ -15,12 +15,16 @@ export default class MySqlService {
    */
   insertOne(row) {
     return new Promise((resolve) => {
-      this.connection.query(`INSERT INTO ${this.table} SET  ?`, MySqlService.queryParams(row), (error, results) => {
-        if (error) {
-          throw (error);
+      this.connection.query(
+        `INSERT INTO ${this.table} SET  ?`,
+        MySqlService.queryParams(row),
+        (error, results) => {
+          if (error) {
+            throw error;
+          }
+          resolve(results);
         }
-        resolve(results);
-      });
+      );
     });
   }
 
@@ -31,13 +35,17 @@ export default class MySqlService {
    */
   insertMany(rows) {
     return new Promise((resolve) => {
-      const params = rows.map(row => MySqlService.queryParams(row));
-      this.connection.query({ sql: `INSERT INTO ${this.table} ${MySqlService.getQuery(rows[0])}` }, [params], (error, results) => {
-        if (error) {
-          throw (error);
+      const params = rows.map((row) => MySqlService.queryParams(row));
+      this.connection.query(
+        { sql: `INSERT INTO ${this.table} ${MySqlService.getQuery(rows[0])}` },
+        [params],
+        (error, results) => {
+          if (error) {
+            throw error;
+          }
+          resolve(results);
         }
-        resolve(results);
-      });
+      );
     });
   }
 
@@ -48,12 +56,15 @@ export default class MySqlService {
    */
   exists(id) {
     return new Promise((resolve) => {
-      this.connection.query(`SELECT * FROM ${this.table} WHERE id = "${id}"`, (error, results) => {
-        if (error) {
-          throw (error);
+      this.connection.query(
+        `SELECT * FROM ${this.table} WHERE id = "${id}"`,
+        (error, results) => {
+          if (error) {
+            throw error;
+          }
+          resolve(results.length === 0);
         }
-        resolve(results.length === 0);
-      });
+      );
     });
   }
 
@@ -66,12 +77,12 @@ export default class MySqlService {
     if (!this.query) {
       this.query = this.queryBuilder(row);
     }
-    return this.query;
+    return this.queryBuilder(row);
   }
 
   /**
    *
-   * @param row {Array}
+   * @param row {Object}
    * @returns {Array}
    */
   static queryParams(row) {
@@ -80,7 +91,7 @@ export default class MySqlService {
 
   /**
    *
-   * @param row {Array}
+   * @param row {Object}
    * @returns {string}
    */
   static queryBuilder(row) {
