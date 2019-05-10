@@ -1,5 +1,5 @@
 import MySqlService from './mySql';
-import { UniquePipe, Writer, PipelineBuilder } from './pipes';
+import { UniquePipe, MysqlPipe, PipeLineBuilder } from '../pipes';
 
 /**
  *
@@ -16,8 +16,8 @@ export const exportData = (source, enhancers, destination) => {
   const sourceStream = doc.find().stream();
   const { connection, entityName } = destination;
   const MySqlServiceInstance = new MySqlService(connection, entityName);
-  const destinationStream = new Writer(MySqlServiceInstance);
-  const pipeline = new PipelineBuilder()
+  const destinationStream = new MysqlPipe(MySqlServiceInstance);
+  const pipeline = new PipeLineBuilder()
     .add(sourceStream)
     .add(new UniquePipe(MySqlServiceInstance));
   enhancers.forEach((enhancer) => pipeline.add(enhancer));

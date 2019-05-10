@@ -1,5 +1,5 @@
 import stream from 'stream';
-import { getReadStreamFromPath, MongoPipe } from '../src/services/pipes';
+import { getReadStreamFromPath, MongoPipe } from '../src/pipes';
 
 const isReadableStream = (obj) =>
   !!(
