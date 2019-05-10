@@ -1,22 +1,41 @@
-import { Transform, Writable } from 'stream';
+import { pipeline as pipelineWithCb, Transform, Writable } from 'stream';
 import _ from 'lodash';
+import { promisify } from 'util';
+import fs from 'fs';
 
+/**
+ *
+ * @param path String
+ * @param option
+ * @returns file stream {ReadStream}
+ */
+// eslint-disable-next-line no-unused-vars
+export const getReadStreamFromPath = (path, option = { encoding: 'utf-8' }) => {
+  try {
+    fs.statSync(path);
+    return fs.createReadStream(path, option);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export class  Writer extends Writable {
-  constructor(destination, chunkSize) {
+export class Writer extends Writable {
+  constructor(destination, chunkSize = 1000) {
     super({
       objectMode: true,
       autoDestroy: true,
     });
     this.buffer = [];
     this.destination = destination;
-    this.chunkSize = chunkSize || 1000;
+    this.chunkSize = chunkSize;
   }
 
   _write(chunk, encoding, callback) {
     const row = JSON.parse(chunk);
     if (row != null) {
-      this.buffer.push(_.mapKeys(row, (value, key) => (key === '_id' ? 'id' : key)));
+      this.buffer.push(
+        _.mapKeys(row, (value, key) => (key === '_id' ? 'id' : key))
+      );
       if (this.buffer.length >= this.chunkSize) {
         this.destination.insertMany([...this.buffer]);
         this.buffer.length = 0;
@@ -30,8 +49,8 @@ export class  Writer extends Writable {
   _destroy(error, callback) {
     try {
       if (this.buffer.length > 0) {
-            this.destination.insertMany([...this.buffer]);
-          }
+        this.destination.insertMany([...this.buffer]);
+      }
     } catch (err) {
       callback(err);
     }
@@ -49,7 +68,7 @@ export class UniquePipe extends Transform {
     this.rows = [];
   }
 
-   _transform(chunk, encoding, callback) {
+  _transform(chunk, encoding, callback) {
     this.mySqlService.exists(chunk._id).then((test) => {
       if (test && _.indexOf(this.rows, chunk._id, 0) === -1) {
         const data = JSON.stringify(chunk);
@@ -63,7 +82,7 @@ export class UniquePipe extends Transform {
 }
 
 export class MongoPipe extends Writable {
-  constructor (connection, dbName, docName) {
+  constructor(connection, dbName, docName) {
     super({
       objectMode: true,
       autoDestroy: true,
@@ -93,15 +112,29 @@ export class MongoPipe extends Writable {
   }
 
   _destroy(error, callback) {
-    try{
+    try {
       this.session.commitTransaction();
       this.session.endSession();
-     } catch (err) {
-        this.session.abortTransaction();
-       callback(err)
-     }
+    } catch (err) {
+      this.session.abortTransaction();
+      callback(err);
+    }
+  }
+}
+
+const pipeline = promisify(pipelineWithCb);
+
+export class PipelineBuilder {
+  constructor() {
+    this.pipes = [];
   }
 
+  add(pipe) {
+    this.pipes.push(pipe);
+    return this;
+  }
 
-
+  build() {
+    return pipeline(...this.pipes);
+  }
 }

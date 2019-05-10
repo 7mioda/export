@@ -1,52 +1,17 @@
-import fs from 'fs';
-import { Readable, Writable, pipeline  as pipelineWithCb } from 'stream';
-import { promisify } from 'util';
-import parse from 'csv-parser';
-import { MongoPipe } from './pipes';
-
-const pipeline = promisify(pipelineWithCb);
-
-class PipelineBuilder {
-  constructor () {
-    this.pipes = []
-  }
-
-  add (pipe) {
-    this.pipes.push(pipe);
-    return this;
-  }
-
-  build () {
-    return pipeline(...this.pipes);
-  }
-}
-
-/**
- *
- * @param path String
- * @returns csv file stream {ReadStream}
- */
-export const getReader = (path) => {
-  try {
-    fs.statSync(path);
-    const reader = fs.createReadStream(path);
-    reader.setEncoding('utf-8');
-    return reader;
-  } catch (error) {
-    throw error;
-  }
-};
+import { Readable, Writable } from 'stream';
+import { MongoPipe, PipelineBuilder, getReadStreamFromPath } from './pipes';
 
 /**
  *
  * @param source {ReadableStream || String}
+ * @param enhancers {Array}
  * @param destination {Object || WritableStream}
  * @returns {Writable|module:stream.internal.Writable}
  */
 
-export const importData = (source, destination) => {
-  const parser = parse({ delimiter: ',' });
-  const sourceStream = source instanceof Readable ? source : getReader(source);
+export const importData = (source, enhancers, destination) => {
+  const sourceStream =
+    source instanceof Readable ? source : getReadStreamFromPath(source);
   let destinationStream;
   if (!(destination instanceof Writable)) {
     const { connection, dbName, docName } = destination;
@@ -54,5 +19,7 @@ export const importData = (source, destination) => {
   } else {
     destinationStream = destination;
   }
-  return new PipelineBuilder().add(sourceStream).add(parser).add(destinationStream).build();
+  const pipeline = new PipelineBuilder().add(sourceStream);
+  enhancers.forEach((enhancer) => pipeline.add(enhancer));
+  return pipeline.add(destinationStream).build();
 };
