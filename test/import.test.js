@@ -1,5 +1,5 @@
 import stream from 'stream';
-import { getReader, mongoPipe } from '../src/services/import';
+import { getReadStreamFromPath, MongoPipe } from '../src/services/pipes';
 
 const isReadableStream = (obj) =>
   !!(
@@ -9,13 +9,13 @@ const isReadableStream = (obj) =>
   );
 
 test('Reader Should be reader Stream', async () => {
-  const reader = getReader('./data/products.csv');
+  const reader = getReadStreamFromPath('./data/products.csv');
   expect(isReadableStream(reader)).toBe(true);
 });
 
 test('Mongo Pipe', async () => {
   const mocData = { name: 'test', surname: 'test' };
-  const mongoPipeInstance = mongoPipe(global.exportClient, 'test', 'testDoc');
+  const mongoPipeInstance = new MongoPipe(global.exportClient, 'test', 'testDoc');
   mongoPipeInstance.write(mocData);
   const db = global.exportClient.db('test');
   const doc = db.collection('testDoc');

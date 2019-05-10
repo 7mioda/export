@@ -51,6 +51,7 @@
     "jest": "^24.7.1",
     "jest-environment-node": "^24.7.1",
     "lint-staged": "^8.1.5",
+    "log-update": "^3.2.0",
     "nodemon": "^1.18.10",
     "prettier": "^1.17.0"
   }
