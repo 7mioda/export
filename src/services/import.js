@@ -1,5 +1,5 @@
 import { Readable, Writable } from 'stream';
-import { MongoPipe, PipelineBuilder, getReadStreamFromPath } from './pipes';
+import { MongoPipe, PipeLineBuilder, getReadStreamFromPath } from '../pipes';
 
 /**
  *
@@ -19,7 +19,7 @@ export const importData = (source, enhancers, destination) => {
   } else {
     destinationStream = destination;
   }
-  const pipeline = new PipelineBuilder().add(sourceStream);
+  const pipeline = new PipeLineBuilder().add(sourceStream);
   enhancers.forEach((enhancer) => pipeline.add(enhancer));
   return pipeline.add(destinationStream).build();
 };
