@@ -9,7 +9,7 @@ import { MongoPipe, PipeLineBuilder, getReadStreamFromPath } from '../pipes';
  * @returns {Writable|module:stream.internal.Writable}
  */
 
-export const importData = (source, enhancers, destination) => {
+export const importData = (source, destination, enhancers = []) => {
   const sourceStream =
     source instanceof Readable ? source : getReadStreamFromPath(source);
   let destinationStream;

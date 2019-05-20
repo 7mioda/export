@@ -9,7 +9,7 @@ import { UniquePipe, MysqlPipe, PipeLineBuilder } from '../pipes';
  * @returns {module:stream.internal.Writable}
  */
 
-export const exportData = (source, enhancers, destination) => {
+export const exportData = (source, destination, enhancers = []) => {
   const { connection: mongoConnection, dbName, docName } = source;
   const db = mongoConnection.db(dbName);
   const doc = db.collection(docName);

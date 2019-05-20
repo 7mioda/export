@@ -25,15 +25,15 @@ export default async ({ app }) => {
         locals: { mongo, mySql },
       },
     } = request;
-    await importData(`./data/${entityName}.csv`, [parse({ delimiter: ',' })], {
+    await importData(`./data/${entityName}.csv`, {
       connection: mongo,
       dbName: 'export',
       docName: entityName,
-    });
+    }, [parse({ delimiter: ',' })]
+      );
     console.log('Pipeline succeeded.');
     await exportData(
       { connection: mongo, dbName: 'export', docName: entityName },
-      [],
       { connection: mySql, entityName }
     );
     console.log('Pipeline succeeded.');
